@@ -2,3 +2,9 @@ data/
 axon-env/
 outputs/
 notebooks/
+
+# Ignore Python cache files recursively
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
