@@ -1,5 +1,5 @@
 """
-File: visualize.py
+File: pre_visualization.py
 Description: This script processes microscopy image data by visualizing binary masks and copying the corresponding original images to a specified output directory.
 Author: Gizachew Kassa
 Date Created: 06/11/2025

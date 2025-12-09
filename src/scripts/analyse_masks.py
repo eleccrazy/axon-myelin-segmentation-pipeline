@@ -56,8 +56,8 @@ def analyze_folder(mask_dir, extensions=("_mask.tif", "_mask.tiff", "_mask.png")
 
 
 if __name__ == "__main__":
-    # Define your two staining folders
-    stain_folders = ["../data/data2", "../data/data2ihc"]
+    # Define staining folders
+    stain_folders = ["../../data/origional/data2", "../../data/origional/data2ihc"]
 
     all_results = [analyze_folder(folder) for folder in stain_folders]
 
