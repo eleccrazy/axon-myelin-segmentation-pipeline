@@ -1,59 +1,30 @@
 """
 File: analyse_masks.py
-Description:
-    Analyze binary mask images for one or more staining domains and
-    summarise the distribution of pixel values (class proportions).
-
-    This script is intended to be run once on the full dataset to check
-    that masks are well-formed (values, dtypes, shapes) and to compute
-    average foreground/background percentages per staining domain and
-    overall.
-
-Usage:
-    # Use the default folders inferred from the repository layout
-    python analyse_masks.py
-
-    # Or explicitly specify one or more mask directories
-    python analyse_masks.py --mask-dirs /path/to/tb_masks /path/to/ihc_masks
+Description: Analyze binary mask images and summarise pixel-class distributions.
+Author: Gizachew Kassa
+Date Created: 09/12/2025
 """
 
 from __future__ import annotations
 
 import argparse
+import json
 import os
-import sys
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Mapping
 
 import numpy as np
 from PIL import Image
 
-# Add the src directory to the Python path
-sys.path.insert(0, str(Path(__file__).parent.parent))
-
-from utils.paths import IHC_DIR, TB_DIR
+from src.utils.paths import IHC_DIR, OUTPUTS_ROOT, TB_DIR
 
 
 def analyze_mask(mask_path: Path) -> Dict[str, Any]:
     """
-    Analyze a single binary mask image.
+    Compute basic statistics for a single mask image.
 
-    Parameters
-    ----------
-    mask_path : Path
-        Path to the mask image file. The mask is assumed to be a
-        single-channel image with integer labels (e.g. 0 for background,
-        255 for foreground).
-
-    Returns
-    -------
-    Dict[str, Any]
-        A dictionary containing:
-            - "file": filename (str)
-            - "shape": image shape (tuple[int, int] or tuple[int, int, int])
-            - "dtype": numpy dtype as string
-            - "unique_values": sorted list of unique label values
-            - "proportions": mapping label -> percentage of pixels (0–100)
+    The mask is assumed to be a single-channel image with integer labels.
+    Returns per-label pixel proportions (in percent) and basic metadata.
     """
     mask_array = np.array(Image.open(mask_path))
     unique_vals, counts = np.unique(mask_array, return_counts=True)
@@ -77,24 +48,10 @@ def analyze_folder(
     extensions: Iterable[str] = ("_mask.tif", "_mask.tiff", "_mask.png"),
 ) -> Dict[str, Any]:
     """
-    Analyze all mask files in a folder and compute the average class distribution.
+    Aggregate mask statistics over all mask files in a folder.
 
-    Parameters
-    ----------
-    mask_dir : Path
-        Directory containing mask image files.
-    extensions : Iterable[str], optional
-        Filename suffixes that identify mask images. Only files whose
-        names end with any of these suffixes (case-insensitive) will
-        be included.
-
-    Returns
-    -------
-    Dict[str, Any]
-        A dictionary containing:
-            - "folder": path to the analyzed folder as a string
-            - "avg_distribution": mapping label -> average percentage
-              of pixels across all masks in the folder
+    Only files whose names end with one of the given suffixes are included.
+    Returns the average per-label pixel proportions across all masks.
     """
     mask_dir = mask_dir.expanduser().resolve()
 
@@ -106,8 +63,6 @@ def analyze_folder(
         for f in os.listdir(mask_dir)
         if f.lower().endswith(tuple(ext.lower() for ext in extensions))
     ]
-
-    print(f"\nFound {len(mask_files)} mask files in '{mask_dir}'")
 
     if not mask_files:
         return {"folder": str(mask_dir), "avg_distribution": {}}
@@ -125,18 +80,6 @@ def analyze_folder(
         for label in all_labels
     }
 
-    shapes = sorted({r["shape"] for r in results})
-    dtypes = sorted({r["dtype"] for r in results})
-    unique_vals = sorted({val for r in results for val in r["unique_values"]})
-
-    print(f"   Image shapes: {shapes}")
-    print(f"   Dtypes: {dtypes}")
-    print(f"   Unique values: {unique_vals}")
-    print(
-        "   Average class distribution (%): "
-        f"{ {int(k): round(v, 2) for k, v in avg_props.items()} }"
-    )
-
     return {
         "folder": str(mask_dir),
         "avg_distribution": avg_props,
@@ -145,44 +88,18 @@ def analyze_folder(
 
 def infer_default_mask_dirs() -> List[Path]:
     """
-    Infer default mask directories based on the repository layout.
+    Return the default stain folders inferred from the project layout.
 
-    This assumes the following structure:
-
-        project_root/
-            data/
-                origional/
-                    data2/      # toluidine blue masks
-                    data2ihc/   # IHC masks
-            scripts/
-                analyse_masks.py
-
-    Returns
-    -------
-    List[Path]
-        List of default mask directory paths.
+    Uses the TB_DIR and IHC_DIR constants defined in src.utils.paths.
     """
-    # scripts/ is the parent of this file; project_root is one level above that
-
-    default_dirs = [TB_DIR, IHC_DIR]
-
-    return default_dirs
+    return [TB_DIR, IHC_DIR]
 
 
 def compute_overall_average(results: Iterable[Mapping[str, Any]]) -> Dict[int, float]:
     """
-    Compute the overall average class distribution across multiple folders.
+    Compute the overall average label distribution across multiple folders.
 
-    Parameters
-    ----------
-    results : Iterable[Mapping[str, Any]]
-        Iterable of folder-level results as returned by `analyze_folder`.
-
-    Returns
-    -------
-    Dict[int, float]
-        Mapping from label value to overall average percentage across
-        all provided folders.
+    Each element in `results` is expected to come from `analyze_folder`.
     """
     overall_labels = set()
     folder_distributions: List[Mapping[int, float]] = []
@@ -205,12 +122,7 @@ def compute_overall_average(results: Iterable[Mapping[str, Any]]) -> Dict[int, f
 
 def parse_args() -> argparse.Namespace:
     """
-    Parse command-line arguments.
-
-    Returns
-    -------
-    argparse.Namespace
-        Parsed arguments with attribute `mask_dirs`, a list of Path objects.
+    Parse command-line arguments for the mask analysis script.
     """
     parser = argparse.ArgumentParser(
         description="Analyze binary mask images and summarise class distributions."
@@ -221,8 +133,7 @@ def parse_args() -> argparse.Namespace:
         nargs="+",
         help=(
             "One or more directories containing mask images. "
-            "If not provided, default folders under data/origional/ "
-            "will be used."
+            "If omitted, default stain folders (TB_DIR, IHC_DIR) are used."
         ),
     )
     return parser.parse_args()
@@ -230,12 +141,13 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> None:
     """
-    Entry point for the script.
+    Run mask analysis for the selected folders and save results to JSON.
 
-    - Determines which mask folders to analyze (CLI or default).
-    - Runs analysis for each folder.
-    - Computes and prints an overall summary across all folders.
+    By default, both toluidine blue and IHC mask folders are analysed,
+    and a JSON summary is written under OUTPUTS_ROOT / 'analysis'.
     """
+    print("Starting mask analysis...")
+
     args = parse_args()
 
     if args.mask_dirs is not None:
@@ -243,23 +155,31 @@ def main() -> None:
     else:
         stain_folders = infer_default_mask_dirs()
 
-    print("Mask analysis")
-    print("=============")
-    print("Folders to be analyzed:")
-    for folder in stain_folders:
-        print(f" - {folder}")
-
     all_results = [analyze_folder(folder) for folder in stain_folders]
-
     overall_avg = compute_overall_average(all_results)
 
-    print("\nGeneralized Summary Across All Stainings")
-    print("=======================================")
-    print(f"   Combined folders: {[str(f) for f in stain_folders]}")
-    print(
-        "   Overall average class distribution (%): "
-        f"{ {int(k): round(v, 2) for k, v in overall_avg.items()} }"
-    )
+    # Save the results to a JSON file
+    output_dir = OUTPUTS_ROOT / "analysis"
+    output_dir.mkdir(parents=True, exist_ok=True)
+    output_path = output_dir / "mask_stats.json"
+
+    json_payload = {
+        "folders": [
+            {
+                "folder": res["folder"],
+                "avg_distribution": {
+                    str(k): float(v) for k, v in res["avg_distribution"].items()
+                },
+            }
+            for res in all_results
+        ],
+        "overall_average": {str(k): float(v) for k, v in overall_avg.items()},
+    }
+
+    with open(output_path, "w", encoding="utf-8") as f:
+        json.dump(json_payload, f, indent=2)
+
+    print(f"Saved mask statistics to: {output_path}")
 
 
 if __name__ == "__main__":
