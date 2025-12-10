@@ -379,7 +379,7 @@ def run_tb_test(
     model.eval()
 
     # Threshold sweep, 0.20–0.60 with 0.025 steps
-    thresholds = [round(t, 3) for t in np.arange(0.20, 0.6001, 0.025)]
+    thresholds = [float(t) for t in np.linspace(0.20, 0.60, 17)]
     t_star, sweep = _calibrate_threshold_binary(model, val_loader, device, thresholds)
     print(f"  Calibrated threshold t*: {t_star:.3f}")
 
@@ -429,7 +429,7 @@ def run_ihc_test(
     model.load_state_dict(state)
     model.eval()
 
-    thresholds = [round(t, 3) for t in np.arange(0.20, 0.6001, 0.025)]
+    thresholds = [float(t) for t in np.linspace(0.20, 0.60, 17)]
     t_star, sweep = _calibrate_threshold_binary(model, val_loader, device, thresholds)
     print(f"  Calibrated threshold t*: {t_star:.3f}")
 
@@ -480,7 +480,7 @@ def run_mixed_test(
     model.eval()
 
     # Threshold sweep: 0.10–0.90 with 0.05 steps
-    thresholds = [round(t, 3) for t in np.arange(0.10, 0.9001, 0.5)]
+    thresholds = [float(t) for t in np.linspace(0.10, 0.90, 17)]
     t_star, sweep = _calibrate_threshold_binary(model, val_loader, device, thresholds)
     print(f"  Calibrated threshold t*: {t_star:.3f}")
 
