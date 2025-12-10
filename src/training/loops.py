@@ -9,7 +9,7 @@ Date Created: 10/12/2025
 from __future__ import annotations
 
 import copy
-from typing import Dict, Optional, Tuple
+from typing import Callable, Dict, Optional, Tuple
 
 import torch
 from torch import nn, optim
@@ -103,17 +103,22 @@ def run_training(
     num_epochs: int,
     early_stopping: Optional[EarlyStopping] = None,
     scheduler: Optional[object] = None,
+    scheduler_mode: Optional[str] = None,
+    val_metrics_fn: Optional[
+        Callable[[nn.Module, DataLoader, torch.device], Dict[str, float]]
+    ] = None,
 ) -> Tuple[nn.Module, Dict[str, list]]:
     """
     Full training loop with optional early stopping and LR scheduler.
 
-    This function mirrors the structure of the original training loops in
-    tb.py, ihc.py and mixed_experiment2.py:
+    Scheduler handling:
+      - scheduler_mode="epoch"   → scheduler.step(epoch)
+      - scheduler_mode="plateau" → scheduler.step(val_loss)
+      - scheduler_mode=None      → scheduler.step() (no arguments)
 
-    - For each epoch, run a training phase and a validation phase.
-    - Track the best validation loss and restore the corresponding weights.
-    - Optionally apply early stopping based on validation loss.
-    - Optionally update a scheduler after each epoch.
+    val_metrics_fn, if provided, is called once per epoch after validation:
+      metrics = val_metrics_fn(model, val_loader, device)
+    and all key/value pairs are appended to the history dict.
     """
     model.to(device)
 
@@ -127,7 +132,7 @@ def run_training(
     best_state = copy.deepcopy(model.state_dict())
 
     if early_stopping is None:
-        early_stopping = EarlyStopping(patience=10, min_delta=0.0, mode="min")
+        early_stopping = EarlyStopping(patience=7, min_delta=0.0, mode="min")
 
     for epoch in range(1, num_epochs + 1):
         print(f"\nEpoch {epoch}/{num_epochs}")
@@ -154,30 +159,47 @@ def run_training(
 
         # --------- LR SCHEDULE ---------
         if scheduler is not None:
-            # WarmupCosineLR and most PyTorch schedulers update via step(epoch)
-            try:
+            if scheduler_mode == "plateau":
+                # e.g. ReduceLROnPlateau on validation loss
+                scheduler.step(val_loss)
+            elif scheduler_mode == "epoch":
+                # e.g. WarmupCosineLR with epoch index
                 scheduler.step(epoch)
-            except TypeError:
-                # Fallback for schedulers that do not take epoch as argument
+            else:
+                # generic step() for schedulers that do not need arguments
                 scheduler.step()
-        # Read current LR from the first param group (assumes single LR)
+
         current_lr = optimizer.param_groups[0].get("lr", None)
         history["lr"].append(current_lr)
 
-        print(
-            f"Train loss: {train_loss:.4f} | "
-            f"Val loss: {val_loss:.4f} | "
-            f"LR: {current_lr:.6f}"
-            if current_lr is not None
-            else f"Train loss: {train_loss:.4f} | Val loss: {val_loss:.4f}"
+        # --------- VALIDATION METRICS (Dice/IoU etc.) ---------
+        if val_metrics_fn is not None:
+            metrics = val_metrics_fn(model, val_loader, device)
+            for name, value in metrics.items():
+                history.setdefault(name, []).append(value)
+        else:
+            metrics = {}
+
+        # --------- LOGGING ---------
+        metrics_str = (
+            " | ".join(f"{k} {v:.4f}" for k, v in metrics.items()) if metrics else ""
         )
+        if current_lr is not None:
+            print(
+                f"Train loss: {train_loss:.4f} | Val loss: {val_loss:.4f} "
+                f"| LR: {current_lr:.6f}" + (f" | {metrics_str}" if metrics_str else "")
+            )
+        else:
+            print(
+                f"Train loss: {train_loss:.4f} | Val loss: {val_loss:.4f}"
+                + (f" | {metrics_str}" if metrics_str else "")
+            )
 
         # --------- EARLY STOPPING ---------
         if val_loss < best_val_loss:
             best_val_loss = val_loss
             best_state = copy.deepcopy(model.state_dict())
             print("  → New best model (val loss improved).")
-
         stop = early_stopping.step(val_loss)
         if stop:
             print("  → Early stopping triggered.")
