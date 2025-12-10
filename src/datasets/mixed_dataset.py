@@ -11,6 +11,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Callable, List, Optional, Tuple
 
+import numpy as np
 import torch
 from PIL import Image
 from torch.utils.data import Dataset
@@ -88,14 +89,10 @@ class MixedLMDataset(Dataset):
         Load a binary mask image and return a tensor of shape [1, H, W].
         """
         mask = Image.open(mask_path).convert("L")
-        mask_array = torch.from_numpy(
-            (torch.tensor(mask, dtype=torch.uint8).numpy() > 0).astype("float32")
-        )
-        # The above line is a bit convoluted; simpler:
-        # mask_array = (np.array(mask) > 0).astype("float32")
-        # mask_tensor = torch.from_numpy(mask_array)
-        # but to avoid importing numpy again, we stay with PIL→numpy if needed.
-        # To keep it clear, we will reimplement below:
+        mask_array = (np.array(mask) > 0).astype("float32")
+        mask_tensor = torch.from_numpy(mask_array)
+
+        return mask_tensor.unsqueeze(0)  # [1, H, W]
 
     def __getitem__(self, idx: int):
         img_path, mask_path, stain_id = self.samples[idx]
