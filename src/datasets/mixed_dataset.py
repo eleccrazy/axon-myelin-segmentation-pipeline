@@ -89,10 +89,9 @@ class MixedLMDataset(Dataset):
         Load a binary mask image and return a tensor of shape [1, H, W].
         """
         mask = Image.open(mask_path).convert("L")
-        mask_array = (np.array(mask) > 0).astype("float32")
-        mask_tensor = torch.from_numpy(mask_array)
-
-        return mask_tensor.unsqueeze(0)  # [1, H, W]
+        mask_array = (np.array(mask) > 0).astype("float32")  # [H, W]
+        mask_tensor = torch.from_numpy(mask_array).unsqueeze(0)  # [1, H, W]
+        return mask_tensor
 
     def __getitem__(self, idx: int):
         img_path, mask_path, stain_id = self.samples[idx]
