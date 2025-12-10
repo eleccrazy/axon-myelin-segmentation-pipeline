@@ -67,12 +67,13 @@ def gaussian_blur_mask(mask: torch.Tensor, sigma: float = 2.0) -> torch.Tensor:
     """
     Apply a Gaussian blur to a binary mask.
 
-    Used by the boundary-aware Dice variant to emphasise border regions.
+    Used by the boundary-aware Dice variant to obtain a smooth version of the
+    target mask that emphasises boundary regions.
     """
-    from scipy.ndimage import gaussian_filter  # local import to avoid hard dependency
+    from skimage.filters import gaussian  # local import to match mixed_experiment2
 
     m = mask.detach().cpu().numpy().astype("float32")
-    m_blur = gaussian_filter(m, sigma=sigma)
+    m_blur = gaussian(m, sigma=sigma)
     return torch.from_numpy(m_blur).to(mask.device).float()
 
 
@@ -80,8 +81,9 @@ class BoundaryAwareDice(nn.Module):
     """
     Dice loss variant that emphasises boundary regions in the target mask.
 
-    The binary target is smoothed with a Gaussian kernel and combined with a
-    boundary_weight factor to up-weight border pixels.
+    The target mask is smoothed with a Gaussian kernel, and the absolute
+    difference |smooth - targets| is used to build a per-pixel weight map.
+    This matches the formulation used in the mixed-stain experiment.
     """
 
     def __init__(
@@ -97,17 +99,21 @@ class BoundaryAwareDice(nn.Module):
 
     def forward(self, probs: torch.Tensor, targets: torch.Tensor) -> torch.Tensor:
         # probs, targets: (B, 1, H, W)
+        targets = targets.float()
         smooth = gaussian_blur_mask(targets, sigma=self.sigma)
 
-        # weight is higher near boundaries
-        weight = 1.0 + self.boundary_weight * smooth
+        # Weight emphasises boundaries via |smooth - targets|
+        weight = 1.0 + self.boundary_weight * torch.abs(smooth - targets)
         weight = weight.detach()
 
-        p = probs * weight
-        t = targets * weight
+        # Flatten for per-sample Dice computation
+        p = probs.view(probs.size(0), -1)
+        t = targets.view(targets.size(0), -1)
+        w = weight.view(weight.size(0), -1)
 
-        inter = (p * t).sum(dim=(1, 2, 3))
-        denom = (p * p).sum(dim=(1, 2, 3)) + (t * t).sum(dim=(1, 2, 3))
+        # Weighted Dice: inter = (p * t * w), denom = (p * w) + (t * w)
+        inter = (p * t * w).sum(dim=1)
+        denom = (p * w).sum(dim=1) + (t * w).sum(dim=1)
 
         dice = (2.0 * inter + self.eps) / (denom + self.eps)
         return 1.0 - dice.mean()
@@ -138,11 +144,13 @@ class BCEDiceBoundary(nn.Module):
         )
 
     def forward(self, logits: torch.Tensor, targets: torch.Tensor) -> torch.Tensor:
+        targets = targets.float()
+
         if self.pos_weight is None:
-            bce = F.binary_cross_entropy_with_logits(logits, targets.float())
+            bce = F.binary_cross_entropy_with_logits(logits, targets)
         else:
             bce = F.binary_cross_entropy_with_logits(
-                logits, targets.float(), pos_weight=self.pos_weight
+                logits, targets, pos_weight=self.pos_weight
             )
 
         probs = torch.sigmoid(logits)
