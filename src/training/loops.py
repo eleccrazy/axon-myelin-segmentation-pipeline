@@ -134,6 +134,8 @@ def run_training(
     if early_stopping is None:
         early_stopping = EarlyStopping(patience=7, min_delta=0.0, mode="min")
 
+    print(f"\nStarting training for up to {num_epochs} epochs...")
+
     for epoch in range(1, num_epochs + 1):
         print(f"\nEpoch {epoch}/{num_epochs}")
 
@@ -160,13 +162,10 @@ def run_training(
         # --------- LR SCHEDULE ---------
         if scheduler is not None:
             if scheduler_mode == "plateau":
-                # e.g. ReduceLROnPlateau on validation loss
                 scheduler.step(val_loss)
             elif scheduler_mode == "epoch":
-                # e.g. WarmupCosineLR with epoch index
                 scheduler.step(epoch)
             else:
-                # generic step() for schedulers that do not need arguments
                 scheduler.step()
 
         current_lr = optimizer.param_groups[0].get("lr", None)
@@ -199,7 +198,8 @@ def run_training(
         if val_loss < best_val_loss:
             best_val_loss = val_loss
             best_state = copy.deepcopy(model.state_dict())
-            print("  → New best model (val loss improved).")
+            print(f"  → New best model (val loss improved to {best_val_loss:.4f}).")
+
         stop = early_stopping.step(val_loss)
         if stop:
             print("  → Early stopping triggered.")
@@ -207,6 +207,7 @@ def run_training(
 
     # Restore best weights
     model.load_state_dict(best_state)
-    print("\nBest model weights restored based on validation loss.")
+    print(f"\nTraining finished. Best validation loss: {best_val_loss:.4f}")
+    print("Best model weights restored based on validation loss.")
 
     return model, history
