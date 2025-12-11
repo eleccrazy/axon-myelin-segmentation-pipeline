@@ -106,10 +106,8 @@ class MixedLMDataset(Dataset):
             img_tensor = self.ihc_pre(img)
 
         # Binary mask [1, H, W]
-        mask_array = torch.from_numpy(
-            (torch.tensor(mask_img, dtype=torch.uint8).numpy() > 0).astype("float32")
-        )
-        mask_tensor = mask_array.unsqueeze(0)
+        mask_array = (np.array(mask_img) > 0).astype("float32")  # [H, W]
+        mask_tensor = torch.from_numpy(mask_array).unsqueeze(0)  # [1, H, W]
 
         if self.augment is not None:
             img_tensor, mask_tensor = self.augment(img_tensor, mask_tensor)
