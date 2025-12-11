@@ -21,6 +21,7 @@ from src.datasets.dataloaders import (
 )
 from src.evaluation.metrics import dice_iou_from_logits, dice_iou_over_loader
 from src.models.unet import UNet
+from src.models.unet_deep import UNetDeep
 from src.models.unet_stain import UNetStain
 from src.training.callbacks import EarlyStopping
 from src.training.loops import run_training
@@ -157,7 +158,14 @@ def run_tb_training():
         device=device,
     )
 
-    model = UNet(in_channels=1, out_channels=1).to(device)
+    # model = UNet(in_channels=1, out_channels=1).to(device)  --- for 3 depth shallow U-Net ---
+
+    model = UNetDeep(
+        in_channels=1,
+        out_channels=1,
+        base_c=64,
+        bilinear=True,
+    ).to(device)
 
     pos_weight = _make_pos_weight(TB_LOSS_CONFIG, device)
     criterion = DiceBCELoss(
@@ -202,7 +210,14 @@ def run_ihc_training():
         device=device,
     )
 
-    model = UNet(in_channels=1, out_channels=1).to(device)
+    # model = UNet(in_channels=1, out_channels=1).to(device)  --- for 3 depth shallow U-Net ---
+
+    model = UNetDeep(
+        in_channels=1,
+        out_channels=1,
+        base_c=64,
+        bilinear=True,
+    ).to(device)
 
     criterion = DiceBCELoss(
         alpha=IHC_LOSS_CONFIG.alpha,

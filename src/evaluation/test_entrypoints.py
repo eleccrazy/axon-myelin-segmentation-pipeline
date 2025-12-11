@@ -29,6 +29,7 @@ from src.datasets.mixed_dataset import MixedLMDataset
 from src.datasets.tb_dataset import TBLMDataset
 from src.evaluation.metrics import dice_iou_over_loader
 from src.models.unet import UNet
+from src.models.unet_deep import UNetDeep
 from src.models.unet_stain import UNetStain
 from src.utils.paths import PROJECT_ROOT
 
@@ -373,7 +374,14 @@ def run_tb_test(
     )
 
     # Load model
-    model = UNet(in_channels=1, out_channels=1).to(device)
+    # model = UNet(in_channels=1, out_channels=1).to(device)  --- for 3 depth shallow U-Net ---
+    model = UNetDeep(
+        in_channels=1,
+        out_channels=1,
+        base_c=64,
+        bilinear=True,
+    ).to(device)
+
     state = torch.load(TB_MODEL_PATH, map_location=device)
     model.load_state_dict(state)
     model.eval()
@@ -424,7 +432,13 @@ def run_ihc_test(
         num_workers=num_workers,
     )
 
-    model = UNet(in_channels=1, out_channels=1).to(device)
+    # model = UNet(in_channels=1, out_channels=1).to(device)  --- for 3 depth shallow U-Net ---
+    model = UNetDeep(
+        in_channels=1,
+        out_channels=1,
+        base_c=64,
+        bilinear=True,
+    ).to(device)
     state = torch.load(IHC_MODEL_PATH, map_location=device)
     model.load_state_dict(state)
     model.eval()
