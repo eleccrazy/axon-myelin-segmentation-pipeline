@@ -1,6 +1,5 @@
 """
-File: metrics.py
-Description: Dice, IoU, precision and recall metrics for segmentation models.
+Dice, IoU, precision and recall metrics for segmentation models.
 
 Author: Gizachew Kassa
 Date Created: 10/12/2025
@@ -145,6 +144,9 @@ def dice_iou_over_loader(
 
     In the mixed case, the model is called as model(images, stains); otherwise
     as model(images).
+
+    IMPORTANT: stains are moved to the same device as the model to avoid
+    CPU/CUDA mismatch errors.
     """
     model.eval()
     dice_sum = 0.0
@@ -161,6 +163,8 @@ def dice_iou_over_loader(
 
             images = images.to(device)
             masks = masks.to(device)
+            if stains is not None:
+                stains = stains.to(device)
 
             if stains is None:
                 logits = model(images)
