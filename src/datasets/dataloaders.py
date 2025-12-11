@@ -25,7 +25,7 @@ def _pin_memory(device: torch.device) -> bool:
 def make_tb_dataloaders(
     batch_size: int,
     device: torch.device,
-    num_workers: int = 4,
+    num_workers: int = 0,
 ) -> Tuple[DataLoader, DataLoader]:
     """
     Build train and validation DataLoaders for the TB experiment.
@@ -57,7 +57,7 @@ def make_tb_dataloaders(
 def make_ihc_dataloaders(
     batch_size: int,
     device: torch.device,
-    num_workers: int = 4,
+    num_workers: int = 0,
 ) -> Tuple[DataLoader, DataLoader]:
     """
     Build train and validation DataLoaders for the IHC experiment.
@@ -87,7 +87,7 @@ def make_ihc_dataloaders(
 def make_mixed_dataloaders(
     batch_size: int,
     device: torch.device,
-    num_workers: int = 4,
+    num_workers: int = 2,
 ) -> Tuple[DataLoader, DataLoader]:
     """
     Build train and validation DataLoaders for the mixed-stain experiment.

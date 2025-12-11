@@ -16,17 +16,12 @@ from pathlib import Path
 
 import torch
 
-# Make sure the project root is on sys.path
-THIS_DIR = Path(__file__).resolve().parent
-PROJECT_ROOT = THIS_DIR.parent
-if str(PROJECT_ROOT) not in sys.path:
-    sys.path.insert(0, str(PROJECT_ROOT))
-
-from src.training.entrypoints import (  # noqa: E402
+from src.training.entrypoints import (
     run_ihc_training,
     run_mixed_training,
     run_tb_training,
 )
+from src.utils.paths import PROJECT_ROOT
 
 # Argument parsing and interactive experiment selection
 

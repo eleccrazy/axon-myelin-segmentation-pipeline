@@ -1,8 +1,14 @@
-data/
+data/origional
+data/splitted
 axon-env/
-outputs/
 notebooks/
-models/
+outputs/analysis/
+outputs/metrics/
+outputs/pre_visualization/
+outputs/training_logs/
+models/tb
+models/ihc
+models/mixed
 
 # Ignore Python cache files recursively
 __pycache__/
