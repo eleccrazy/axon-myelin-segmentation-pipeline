@@ -42,6 +42,8 @@ def train_one_epoch(
 
         imgs = imgs.to(device)
         masks = masks.to(device)
+        if stains is not None:
+            stains = stains.to(device)
 
         optimizer.zero_grad()
         if stains is None:
@@ -81,6 +83,8 @@ def validate_one_epoch(
 
             imgs = imgs.to(device)
             masks = masks.to(device)
+            if stains is not None:
+                stains = stains.to(device)
 
             if stains is None:
                 logits = model(imgs)
