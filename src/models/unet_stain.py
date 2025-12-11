@@ -137,7 +137,7 @@ class UNetStain(nn.Module):
 
     The architecture mirrors the deeper U-Net from mixed_experiment2.py:
     - 4 downsampling steps (feature sizes 64, 128, 256, 512, 512)
-    - stain embedding concatenated at the bottleneck (8 channels by default)
+    - stain embedding concatenated at the bottleneck (1 channel by default)
     - symmetric decoder with skip connections
     """
 
