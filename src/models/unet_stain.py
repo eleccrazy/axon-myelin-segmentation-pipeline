@@ -101,7 +101,7 @@ class StainEmbedding(nn.Module):
       1 → IHC (DAB)
     """
 
-    def __init__(self, embed_dim: int = 8) -> None:
+    def __init__(self, embed_dim: int = 1) -> None:
         super().__init__()
         self.emb = nn.Embedding(num_embeddings=2, embedding_dim=embed_dim)
 
@@ -147,7 +147,7 @@ class UNetStain(nn.Module):
         out_channels: int = 1,
         base_c: int = 64,
         bilinear: bool = True,
-        embed_dim: int = 8,
+        embed_dim: int = 1,
     ) -> None:
         super().__init__()
 

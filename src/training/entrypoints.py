@@ -83,7 +83,9 @@ def ihc_val_metrics(model, val_loader, device) -> Dict[str, float]:
     return {"val_dice": dice}
 
 
-def mixed_val_metrics(model, val_loader, device, threshold: float = 0.5) -> Dict[str, float]:
+def mixed_val_metrics(
+    model, val_loader, device, threshold: float = 0.5
+) -> Dict[str, float]:
     """
     Mixed-stain: overall Dice and IoU on validation set, plus per-stain Dice.
     Assumes val_loader yields (images, masks, stains) and that stains encode
@@ -104,16 +106,14 @@ def mixed_val_metrics(model, val_loader, device, threshold: float = 0.5) -> Dict
             logits = model(images, stains)
 
             # overall Dice & IoU
-            d_batch, i_batch = dice_iou_from_logits(
-                logits, masks, threshold=threshold
-            )
+            d_batch, i_batch = dice_iou_from_logits(logits, masks, threshold=threshold)
             dice_all_sum += d_batch
             iou_all_sum += i_batch
             n_batches += 1
 
             # per-stain Dice
-            tb_mask = (stains == 0)
-            ihc_mask = (stains == 1)
+            tb_mask = stains == 0
+            ihc_mask = stains == 1
 
             if tb_mask.any():
                 d_tb, _ = dice_iou_from_logits(
@@ -257,7 +257,9 @@ class WarmupCosineLR:
     the optimiser learning rate in-place and returns the current LR from step().
     """
 
-    def __init__(self, optimizer, base_lr: float, warmup_epochs: int, total_epochs: int):
+    def __init__(
+        self, optimizer, base_lr: float, warmup_epochs: int, total_epochs: int
+    ):
         self.optimizer = optimizer
         self.base_lr = base_lr
         self.warmup_epochs = warmup_epochs
@@ -270,7 +272,11 @@ class WarmupCosineLR:
             progress = (epoch - self.warmup_epochs) / max(
                 self.total_epochs - self.warmup_epochs, 1
             )
-            lr = 0.5 * self.base_lr * (1.0 + torch.cos(torch.tensor(progress * 3.1415926535)))
+            lr = (
+                0.5
+                * self.base_lr
+                * (1.0 + torch.cos(torch.tensor(progress * 3.1415926535)))
+            )
             lr = float(lr)
 
         for pg in self.optimizer.param_groups:
@@ -292,7 +298,7 @@ def run_mixed_training():
     model = UNetStain(
         in_channels=1,
         out_channels=1,
-        # other UNetStain args should match mixed_experiment2.py
+        embed_dim=1,
     ).to(device)
 
     criterion = BCEDiceBoundary(
