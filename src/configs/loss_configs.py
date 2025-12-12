@@ -36,8 +36,7 @@ class BCEDiceBoundaryConfig:
 # TB / IHC stain-specific models (Dice + BCE)
 # -------------------------------------------------------------------------
 
-# Both TB and IHC use alpha = 0.5 in the thesis.
-# TB may use a positive-class weight estimated from class imbalance.
+# Both TB and IHC use alpha = 0.5.
 TB_LOSS_CONFIG = DiceBCELossConfig(
     alpha=0.5,
     use_pos_weight=True,
