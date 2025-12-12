@@ -34,7 +34,7 @@ def parse_args() -> argparse.Namespace:
         "--batch-size",
         type=int,
         default=2,
-        help="Batch size for evaluation (default: 1).",
+        help="Batch size for evaluation (default: 2).",
     )
     parser.add_argument(
         "--num-workers",

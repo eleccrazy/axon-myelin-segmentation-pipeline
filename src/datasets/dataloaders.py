@@ -13,6 +13,7 @@ from typing import Tuple
 import torch
 from torch.utils.data import DataLoader
 
+from src.datasets.augmentations import basic_geo_augment
 from src.datasets.ihc_dataset import IHCLMDataset
 from src.datasets.mixed_dataset import MixedLMDataset
 from src.datasets.tb_dataset import TBLMDataset
@@ -30,9 +31,7 @@ def make_tb_dataloaders(
     """
     Build train and validation DataLoaders for the TB experiment.
     """
-    train_ds = TBLMDataset(
-        split="train", augment=None
-    )  # plug augmentation here if needed
+    train_ds = TBLMDataset(split="train", augment=basic_geo_augment)
     val_ds = TBLMDataset(split="val", augment=None)
 
     train_loader = DataLoader(
@@ -62,7 +61,7 @@ def make_ihc_dataloaders(
     """
     Build train and validation DataLoaders for the IHC experiment.
     """
-    train_ds = IHCLMDataset(split="train", augment=None)
+    train_ds = IHCLMDataset(split="train", augment=basic_geo_augment)
     val_ds = IHCLMDataset(split="val", augment=None)
 
     train_loader = DataLoader(
@@ -92,7 +91,7 @@ def make_mixed_dataloaders(
     """
     Build train and validation DataLoaders for the mixed-stain experiment.
     """
-    train_ds = MixedLMDataset(split="train", augment=None)
+    train_ds = MixedLMDataset(split="train", augment=basic_geo_augment)
     val_ds = MixedLMDataset(split="val", augment=None)
 
     train_loader = DataLoader(
