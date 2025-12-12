@@ -6,6 +6,7 @@ outputs/analysis/
 outputs/metrics/
 outputs/pre_visualization/
 outputs/training_logs/
+outputs/figures/
 models/tb
 models/ihc
 models/mixed
