@@ -93,9 +93,6 @@ def generate_overlays(
     if threshold is None:
         threshold = load_calibrated_threshold(exp, default=0.5)
 
-    # Kept only for consistent directory structure; overlays are full-image.
-    crop_size = 256
-
     if save_dir is None:
         save_dir = OUTPUTS_ROOT / "figures" / exp / "overlays"
     save_dir = Path(save_dir)
