@@ -167,8 +167,8 @@ The mixed-stain model uses these split TB and IHC folders jointly for each split
 1. Clone the repository:
 
    ```bash
-   git clone <this-repo-url>.git
-   cd <this-repo-name>
+   git clone https://github.com/eleccrazy/axon-myelin-segmentation-pipeline.git
+   cd axon-myelin-segmentation-pipeline
    ```
 
 2. Create and activate a virtual environment (example with `venv`):

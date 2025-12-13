@@ -166,11 +166,11 @@ class UNetStain(nn.Module):
         self.stain_emb = StainEmbedding(embed_dim=embed_dim)
 
         # Bottleneck concatenation: (base_c*16//factor) + embed_dim
-        bottleneck_ch = base_c * 16 // factor + embed_dim  # 512 + 8 = 520
+        bottleneck_ch = base_c * 16 // factor + embed_dim  # 512 + 1 = 513
 
         # Decoder (channels must match concatenations)
-        # up1: input = upsampled bottleneck (520) + skip from x4 (512)
-        self.up1 = Up(bottleneck_ch + base_c * 8, base_c * 8 // factor)  # 1032 → 256
+        # up1: input = upsampled bottleneck (513) + skip from x4 (512)
+        self.up1 = Up(bottleneck_ch + base_c * 8, base_c * 8 // factor)  # 1025 → 256
 
         # up2: input = 256 + skip from x3 (256)
         self.up2 = Up(
