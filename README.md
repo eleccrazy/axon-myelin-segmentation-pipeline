@@ -1,11 +1,11 @@
 # Axon–Myelin Segmentation Pipeline
 
-A deep learning–based segmentation pipeline for the combined axon+myelin foreground in light microscopy (LM) images of peripheral nerve cross-sections.
+A deep learning–based segmentation pipeline for myelin sheath extraction in light microscopy (LM) images of peripheral nerve cross-sections.
 
-The project implements and evaluates U-Net–style models for binary foreground segmentation (axon+myelin vs background) in bright-field images from two staining domains:
+The project implements and evaluates U-Net–style models for binary myelin vs non-myelin segmentation in bright-field images from two staining domains:
 
 - Toluidine blue (TB)
-- DAB-based immunohistochemistry (IHC)
+- immunohistochemistry (IHC)
 
 Three training configurations are supported:
 
