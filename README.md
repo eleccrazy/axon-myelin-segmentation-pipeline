@@ -24,14 +24,7 @@ At a high level, the repository is organised as follows:
 ```text
 project_root/
   README.md
-  scripts/
-    analyse_masks.py
-    pre_visualization.py
-    split_dataset.py
-    train.py
-    test.py
-    # (visualisation scripts for overlays/triplets can be added here later)
-  src/
+  src/  
     configs/
       preprocessing_configs.py
       loss_configs.py
@@ -47,6 +40,15 @@ project_root/
     preprocessing/
       tb_preprocessing.py
       ihc_preprocessing.py
+    scripts/
+      analyse_masks.py
+      generate_overlays.py
+      generate_triplets.py
+      plot_history.py
+      pre_visualization.py
+      split_dataset.py
+      train.py
+      test.py
     training/
       loops.py
       callbacks.py
@@ -57,6 +59,11 @@ project_root/
       test_entrypoints.py
     utils/
       paths.py
+    visualization/
+      history_plots.py
+      overlays.py
+      triplets.py
+      utils.py
   data/
     origional/
       data2/      # raw TB images and masks
@@ -172,14 +179,7 @@ The mixed-stain model uses these split TB and IHC folders jointly for each split
    # .venv\Scripts\activate           # Windows
    ```
 
-3. Install dependencies (adjust as needed, depending on your environment):
-
-   ```bash
-   pip install torch torchvision torchaudio  # choose CPU/GPU build as appropriate
-   pip install numpy scipy scikit-image pillow tqdm matplotlib
-   ```
-
-   If you maintain a `requirements.txt`, you can instead use:
+3. Install dependencies:
 
    ```bash
    pip install -r requirements.txt
@@ -209,7 +209,7 @@ This is useful to verify that the masks are binary, correctly encoded, and reaso
 Example usage:
 
 ```bash
-python scripts/analyse_masks.py
+python src/scripts/analyse_masks.py
 ```
 
 (The script reads base paths from `src/utils/paths.py` so you do not need to pass them on the command line.)
@@ -229,7 +229,7 @@ This is intended for quick sanity checks before running the full pipeline.
 Example usage:
 
 ```bash
-python scripts/pre_visualization.py
+python src/scripts/pre_visualization.py
 ```
 
 ---
@@ -252,7 +252,7 @@ Splits the raw TB and IHC datasets into train/val/test sets:
 Run once after preparing the raw data:
 
 ```bash
-python scripts/split_dataset.py
+python src/scripts/split_dataset.py
 ```
 
 All training and testing code assumes that these split folders exist.
@@ -286,12 +286,15 @@ You normally do not call these modules directly; they are used by the training a
 
 Model definitions:
 
-- `unet.py`  
-  A lightweight U-Net used for the TB-only and IHC-only experiments. It takes single-channel preprocessed images and outputs a single-channel foreground probability map.
 
 - `unet_stain.py`  
   A U-Net variant with an additional stain embedding at the bottleneck. It takes `(image, stain_id)` as input and is used for the mixed-stain experiment.
 
+- unet_deep.py
+  A deeper U-Net variant with more feature channels and additional downsampling/upsampling layers. (used for ihc and tb experiments)
+
+- `unet.py`  
+  (not used in main experiments) A lightweight U-Net. Used for tb and ihc initial experiments.
 ---
 
 ### `src/preprocessing/*`
@@ -352,12 +355,12 @@ Example usage:
 
 ```bash
 # interactive choice
-python scripts/train.py
+python3 -m src.scripts.train --exp <exp type>
 
 # direct selection
-python scripts/train.py --exp tb
-python scripts/train.py --exp ihc
-python scripts/train.py --exp mixed
+python3 -m src.scripts.train --exp tb
+python3 -m src.scripts.train --exp ihc
+python3 -m src.scripts.train --exp mixed
 ```
 
 ---
@@ -406,12 +409,93 @@ Command-line entrypoint for evaluation:
 Example usage:
 
 ```bash
-python scripts/test.py --exp tb
-python scripts/test.py --exp ihc
-python scripts/test.py --exp mixed
+python3 -m src.scripts.test --exp tb
+python3 -m src.scripts.test --exp ihc
+python3 -m src.scripts.test --exp mixed
 ```
 
 You can adjust `--batch-size` and `--num-workers` if needed.
+
+## Visualisation (training curves, triplets, and overlays)
+
+After running src/scripts/test.py, you can generate training curves from the saved history files and qualitative figures using the calibrated threshold stored in outputs/metrics/<exp>/metrics_<exp>.json
+### Training curves
+Generate training curves for all experiments:
+
+```bash
+python -m src.scripts.plot_history --exp tb
+python -m src.scripts.plot_history --exp ihc
+python -m src.scripts.plot_history --exp mixed
+```
+Outputs are saved to:
+
+```text
+outputs/figures/<exp>/curves/
+```
+
+Note: it assumes that the training history files are present in outputs/training_logs/<exp>/ from previous training runs.
+
+### Triplet fragments (input / ground truth / prediction)
+
+Generate triplet fragments for all test images:
+
+```bash
+python -m src.scripts.generate_triplets --exp tb
+python -m src.scripts.generate_triplets --exp ihc
+python -m src.scripts.generate_triplets --exp mixed
+```
+
+Control how many fragments are generated **per test image**:
+
+```bash
+python -m src.scripts.generate_triplets --exp ihc --num-fragments 2
+```
+Control the fragment crop size (default: 256):
+
+```bash
+python -m src.scripts.generate_triplets --exp ihc --crop-size 512
+```
+
+Outputs are saved to:
+
+```text
+outputs/figures/<exp>/triplets/<crop_size>/
+```
+
+For the mixed-stain model, results are additionally grouped under:
+
+```text
+outputs/figures/mixed/triplets/<crop_size>/stain_tb/
+outputs/figures/mixed/triplets/<crop_size>/stain_ihc/
+```
+
+### Full-image error overlays (FP/FN/TP)
+
+Generate full-image overlays for all test images:
+
+```bash
+python -m src.scripts.generate_overlays --exp tb
+python -m src.scripts.generate_overlays --exp ihc
+python -m src.scripts.generate_overlays --exp mixed
+```
+
+Overlay encoding:
+- **FP** = red
+- **FN** = green
+- **TP** = yellow
+
+Outputs are saved to:
+
+```text
+outputs/figures/<exp>/overlays/
+```
+
+For the mixed-stain model, results are additionally grouped under:
+
+```text
+outputs/figures/mixed/overlays/stain_tb/
+outputs/figures/mixed/overlays/stain_ihc/
+```
 
 ---
 
@@ -426,7 +510,7 @@ A typical end-to-end workflow is:
 2. **Optional: analyze masks**
 
    ```bash
-   python scripts/analyse_masks.py
+   python3 -m src.scripts.analyse_masks
    ```
 
    Inspect the JSON report in `outputs/mask_analysis/` to verify mask encoding and foreground proportions.
@@ -434,7 +518,7 @@ A typical end-to-end workflow is:
 3. **Split into train/val/test**
 
    ```bash
-   python scripts/split_dataset.py
+   python3 -m src.scripts.split_dataset
    ```
 
    This creates `data/splitted/tb/{train,val,test}/` and `data/splitted/ihc/{train,val,test}/`.
@@ -442,7 +526,7 @@ A typical end-to-end workflow is:
 4. **Optional: pre-visualisation**
 
    ```bash
-   python scripts/pre_visualization.py
+   python3 -m src.scripts.pre_visualization
    ```
 
    Check `outputs/pre_visualization/` to visually confirm image–mask alignment and staining quality.
@@ -451,13 +535,13 @@ A typical end-to-end workflow is:
 
    ```bash
    # TB-only model
-   python scripts/train.py --exp tb
+   python3 -m src.scripts.train --exp tb
 
    # IHC-only model
-   python scripts/train.py --exp ihc
+   python3 -m src.scripts.train --exp ihc
 
    # Mixed-stain model
-   python scripts/train.py --exp mixed
+   python3 -m src.scripts.train --exp mixed
    ```
 
    Each run saves the best checkpoint to `models/<exp>/...` and training history to `outputs/training_logs/<exp>/`.
@@ -465,23 +549,30 @@ A typical end-to-end workflow is:
 6. **Evaluate models**
 
    ```bash
-   python scripts/test.py --exp tb
-   python scripts/test.py --exp ihc
-   python scripts/test.py --exp mixed
+   python3 -m src.scripts.test --exp tb
+   python3 -m src.scripts.test --exp ihc
+   python3 -m src.scripts.test --exp mixed
    ```
 
    The calibrated thresholds and test metrics are written to `outputs/metrics/<exp>/metrics_*.json`.
+7. **Generate visualisations**
 
-7. **Visualisation (to be added)**
+   ```bash
+   # Training curves
+   python -m src.scripts.plot_history --exp tb
+   python -m src.scripts.plot_history --exp ihc
+   python -m src.scripts.plot_history --exp mixed
 
-   Once visualisation scripts are in place (for overlays, triplet panels, and training curves), they will live under:
+   # Triplet fragments
+   python -m src.scripts.generate_triplets --exp tb
+   python -m src.scripts.generate_triplets --exp ihc
+   python -m src.scripts.generate_triplets --exp mixed
 
-   - `scripts/` for the command-line entrypoints,
-   - `models/<exp>/...` for model weights,
-   - `outputs/training_logs/<exp>/history_*.json` for training curves,
-   - `data/splitted/...` for input images and masks,
-   - and will write figures to `outputs/figures/<exp>/`.
-
+   # Full-image overlays
+   python -m src.scripts.generate_overlays --exp tb
+   python -m src.scripts.generate_overlays --exp ihc
+   python -m src.scripts.generate_overlays --exp mixed
+   ```
 ---
 
 This structure is intended to make it straightforward to:
