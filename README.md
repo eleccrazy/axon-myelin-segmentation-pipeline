@@ -46,6 +46,7 @@ project_root/
       generate_triplets.py
       plot_history.py
       pre_visualization.py
+      previsualize_preprocessing.py
       split_dataset.py
       train.py
       test.py
@@ -209,7 +210,7 @@ This is useful to verify that the masks are binary, correctly encoded, and reaso
 Example usage:
 
 ```bash
-python src/scripts/analyse_masks.py
+python3 -m src.scripts.analyse_masks
 ```
 
 (The script reads base paths from `src/utils/paths.py` so you do not need to pass them on the command line.)
@@ -229,7 +230,7 @@ This is intended for quick sanity checks before running the full pipeline.
 Example usage:
 
 ```bash
-python src/scripts/pre_visualization.py
+python3 -m src.scripts.previsualize_preprocessing
 ```
 
 ---
@@ -252,12 +253,32 @@ Splits the raw TB and IHC datasets into train/val/test sets:
 Run once after preparing the raw data:
 
 ```bash
-python src/scripts/split_dataset.py
+python3 -m src.scripts.split_dataset
 ```
 
 All training and testing code assumes that these split folders exist.
 
 ---
+
+### `scripts/previsualize_preprocessing.py`
+
+Generates a small set of qualitative examples to verify the stain-specific preprocessing for TB and IHC:
+
+- selects 1 sample image from each stain (TB + IHC),
+- extracts 2 random crops per image (crop size: 256),
+- applies the corresponding preprocessing pipeline,
+- saves the original and preprocessed crops as separate PNG files with `_org` and `_pre` postfixes.
+
+Outputs are written to:
+
+```text
+outputs/pre_visualization/orginal_vs_preprocessed/
+```
+Example usage:
+
+```bash
+python3 -m src.scripts.previsualize_preprocessing
+```
 
 ### `src/datasets/*` and `src/datasets/dataloaders.py`
 
@@ -423,9 +444,9 @@ After running src/scripts/test.py, you can generate training curves from the sav
 Generate training curves for all experiments:
 
 ```bash
-python -m src.scripts.plot_history --exp tb
-python -m src.scripts.plot_history --exp ihc
-python -m src.scripts.plot_history --exp mixed
+python3 -m src.scripts.plot_history --exp tb
+python3 -m src.scripts.plot_history --exp ihc
+python3 -m src.scripts.plot_history --exp mixed
 ```
 Outputs are saved to:
 
@@ -440,20 +461,20 @@ Note: it assumes that the training history files are present in outputs/training
 Generate triplet fragments for all test images:
 
 ```bash
-python -m src.scripts.generate_triplets --exp tb
-python -m src.scripts.generate_triplets --exp ihc
-python -m src.scripts.generate_triplets --exp mixed
+python3 -m src.scripts.generate_triplets --exp tb
+python3 -m src.scripts.generate_triplets --exp ihc
+python3 -m src.scripts.generate_triplets --exp mixed
 ```
 
 Control how many fragments are generated **per test image**:
 
 ```bash
-python -m src.scripts.generate_triplets --exp ihc --num-fragments 2
+python3 -m src.scripts.generate_triplets --exp ihc --num-fragments 2
 ```
 Control the fragment crop size (default: 256):
 
 ```bash
-python -m src.scripts.generate_triplets --exp ihc --crop-size 512
+python3 -m src.scripts.generate_triplets --exp ihc --crop-size 512
 ```
 
 Outputs are saved to:
@@ -474,9 +495,9 @@ outputs/figures/mixed/triplets/<crop_size>/stain_ihc/
 Generate full-image overlays for all test images:
 
 ```bash
-python -m src.scripts.generate_overlays --exp tb
-python -m src.scripts.generate_overlays --exp ihc
-python -m src.scripts.generate_overlays --exp mixed
+python3 -m src.scripts.generate_overlays --exp tb
+python3 -m src.scripts.generate_overlays --exp ihc
+python3 -m src.scripts.generate_overlays --exp mixed
 ```
 
 Overlay encoding:
@@ -523,10 +544,11 @@ A typical end-to-end workflow is:
 
    This creates `data/splitted/tb/{train,val,test}/` and `data/splitted/ihc/{train,val,test}/`.
 
-4. **Optional: pre-visualisation**
+4. **Optional: pre-visualisation and view preprocessed images**
 
    ```bash
    python3 -m src.scripts.pre_visualization
+   python3 -m src.scripts.previsualize_preprocessing
    ```
 
    Check `outputs/pre_visualization/` to visually confirm image–mask alignment and staining quality.
@@ -559,19 +581,19 @@ A typical end-to-end workflow is:
 
    ```bash
    # Training curves
-   python -m src.scripts.plot_history --exp tb
-   python -m src.scripts.plot_history --exp ihc
-   python -m src.scripts.plot_history --exp mixed
+   python3 -m src.scripts.plot_history --exp tb
+   python3 -m src.scripts.plot_history --exp ihc
+   python3 -m src.scripts.plot_history --exp mixed
 
    # Triplet fragments
-   python -m src.scripts.generate_triplets --exp tb
-   python -m src.scripts.generate_triplets --exp ihc
-   python -m src.scripts.generate_triplets --exp mixed
+   python3 -m src.scripts.generate_triplets --exp tb
+   python3 -m src.scripts.generate_triplets --exp ihc
+   python3 -m src.scripts.generate_triplets --exp mixed
 
    # Full-image overlays
-   python -m src.scripts.generate_overlays --exp tb
-   python -m src.scripts.generate_overlays --exp ihc
-   python -m src.scripts.generate_overlays --exp mixed
+   python3 -m src.scripts.generate_overlays --exp tb
+   python3 -m src.scripts.generate_overlays --exp ihc
+   python3 -m src.scripts.generate_overlays --exp mixed
    ```
 ---
 
