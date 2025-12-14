@@ -217,24 +217,6 @@ python3 -m src.scripts.analyse_masks
 
 ---
 
-### `scripts/pre_visualization.py`
-
-Generates a small set of preview image–mask pairs from the raw dataset:
-
-- selects a few representative image–mask pairs per stain,
-- optionally binarizes masks for visual clarity,
-- writes them to `outputs/pre_visualization/` for manual inspection.
-
-This is intended for quick sanity checks before running the full pipeline.
-
-Example usage:
-
-```bash
-python3 -m src.scripts.previsualize_preprocessing
-```
-
----
-
 ### `scripts/split_dataset.py`
 
 Splits the raw TB and IHC datasets into train/val/test sets:
@@ -257,6 +239,24 @@ python3 -m src.scripts.split_dataset
 ```
 
 All training and testing code assumes that these split folders exist.
+
+---
+
+### `scripts/pre_visualization.py`
+
+Generates a small set of preview image–mask pairs from the raw dataset:
+
+- selects a few representative image–mask pairs per stain,
+- optionally binarizes masks for visual clarity,
+- writes them to `outputs/pre_visualization/` for manual inspection.
+
+This is intended for quick sanity checks before running the full pipeline.
+
+Example usage:
+
+```bash
+python3 -m src.scripts.previsualize_preprocessing
+```
 
 ---
 
