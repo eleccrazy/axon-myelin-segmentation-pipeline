@@ -1,5 +1,6 @@
 """
-Dice, IoU, precision and recall metrics for segmentation models.
+File: metrics.py
+Description: Dice, IoU, precision and recall metrics for segmentation models.
 
 Author: Gizachew Kassa
 Date Created: 10/12/2025

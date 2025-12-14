@@ -70,7 +70,7 @@ def gaussian_blur_mask(mask: torch.Tensor, sigma: float = 2.0) -> torch.Tensor:
     Used by the boundary-aware Dice variant to obtain a smooth version of the
     target mask that emphasises boundary regions.
     """
-    from skimage.filters import gaussian  # local import to match mixed_experiment2
+    from skimage.filters import gaussian
 
     m = mask.detach().cpu().numpy().astype("float32")
     m_blur = gaussian(m, sigma=sigma)

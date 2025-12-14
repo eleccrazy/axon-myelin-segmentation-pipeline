@@ -36,7 +36,7 @@ class DABPreprocessConfig:
 # Toluidine blue (TB) presets
 # -------------------------------------------------------------------------
 
-# Stain-specific TB model (matches BluePreprocess in tb.py)
+# Stain-specific TB model
 TB_TRAIN_PREPROCESS_CONFIG = TBPreprocessConfig(
     clahe_clip=2.0,
     clahe_tile=(8, 8),
@@ -45,7 +45,7 @@ TB_TRAIN_PREPROCESS_CONFIG = TBPreprocessConfig(
     use_percentile_clip=False,
 )
 
-# Mixed-stain TB branch (matches LABLPreprocess in mixed_experiment2.py)
+# Mixed-stain TB branch
 MIXED_TB_PREPROCESS_CONFIG = TBPreprocessConfig(
     clahe_clip=2.0,
     clahe_tile=(8, 8),
@@ -59,63 +59,16 @@ MIXED_TB_PREPROCESS_CONFIG = TBPreprocessConfig(
 # IHC (DAB) presets
 # -------------------------------------------------------------------------
 
-# Stain-specific IHC model (matches DABPreprocess in ihc.py)
+# Stain-specific IHC model
 IHC_TRAIN_PREPROCESS_CONFIG = DABPreprocessConfig(
     clahe_clip=0.02,
     denoise_sigma=0.5,
     use_percentile_clip=False,
 )
 
-# Mixed-stain IHC branch (matches DABPreprocess in mixed_experiment2.py)
+# Mixed-stain IHC branch
 MIXED_IHC_PREPROCESS_CONFIG = DABPreprocessConfig(
     clahe_clip=0.02,
     denoise_sigma=0.5,
     use_percentile_clip=True,
 )
-
-"""
-Example Usage:
-
-# TB only
-from src.preprocessing.tb_preprocessing import TBPreprocess
-from src.configs.preprocessing_configs import TB_TRAIN_PREPROCESS_CONFIG
-
-tb_pre = TBPreprocess(
-    clahe_clip=TB_TRAIN_PREPROCESS_CONFIG.clahe_clip,
-    clahe_tile=TB_TRAIN_PREPROCESS_CONFIG.clahe_tile,
-    illum_sigma=TB_TRAIN_PREPROCESS_CONFIG.illum_sigma,
-    denoise_sigma=TB_TRAIN_PREPROCESS_CONFIG.denoise_sigma,
-    use_percentile_clip=TB_TRAIN_PREPROCESS_CONFIG.use_percentile_clip,
-)
-
-# TB in mixed-stain
-from src.preprocessing.tb_preprocessing import TBPreprocess
-from src.configs.preprocessing_configs import MIXED_TB_PREPROCESS_CONFIG
-
-tb_pre_mixed = TBPreprocess(
-    clahe_clip=MIXED_TB_PREPROCESS_CONFIG.clahe_clip,
-    clahe_tile=MIXED_TB_PREPROCESS_CONFIG.clahe_tile,
-    illum_sigma=MIXED_TB_PREPROCESS_CONFIG.illum_sigma,
-    denoise_sigma=MIXED_TB_PREPROCESS_CONFIG.denoise_sigma,
-    use_percentile_clip=MIXED_TB_PREPROCESS_CONFIG.use_percentile_clip,
-)
-
-# IHC only
-from src.preprocessing.ihc_preprocessing import DABPreprocess
-from src.configs.preprocessing_configs import IHC_TRAIN_PREPROCESS_CONFIG
-
-ihc_pre = DABPreprocess(
-    clahe_clip=IHC_TRAIN_PREPROCESS_CONFIG.clahe_clip,
-    denoise_sigma=IHC_TRAIN_PREPROCESS_CONFIG.denoise_sigma,
-    use_percentile_clip=IHC_TRAIN_PREPROCESS_CONFIG.use_percentile_clip,
-)
-
-# IHC in mixed-stain
-from src.configs.preprocessing_configs import MIXED_IHC_PREPROCESS_CONFIG
-
-ihc_pre_mixed = DABPreprocess(
-    clahe_clip=MIXED_IHC_PREPROCESS_CONFIG.clahe_clip,
-    denoise_sigma=MIXED_IHC_PREPROCESS_CONFIG.denoise_sigma,
-    use_percentile_clip=MIXED_IHC_PREPROCESS_CONFIG.use_percentile_clip,
-)
-"""

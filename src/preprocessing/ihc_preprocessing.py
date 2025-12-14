@@ -71,21 +71,3 @@ class DABPreprocess:
 
         # Return [1, H, W] tensor
         return torch.from_numpy(dab_z).float().unsqueeze(0)
-
-
-"""
-Example instances with typical parameters for IHC preprocessing in ihc and mixed-stain experiments.
-
-ihc_pre = DABPreprocess(
-    clahe_clip=0.02,
-    denoise_sigma=0.5,
-    use_percentile_clip=False,
-)
-
-ihc_pre_mixed = DABPreprocess(
-    clahe_clip=0.02,
-    denoise_sigma=0.5,
-    use_percentile_clip=True,
-)
-
-"""

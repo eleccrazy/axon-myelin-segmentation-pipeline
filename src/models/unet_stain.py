@@ -98,7 +98,7 @@ class StainEmbedding(nn.Module):
 
     Expects integer stain IDs of shape [B], with:
       0 → toluidine blue (TB)
-      1 → IHC (DAB)
+      1 → IHC
     """
 
     def __init__(self, embed_dim: int = 1) -> None:

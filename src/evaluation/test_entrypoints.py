@@ -45,10 +45,6 @@ IHC_MODEL_PATH = MODELS_ROOT / "ihc" / "unet_ihc_best.pth"
 MIXED_MODEL_PATH = MODELS_ROOT / "mixed" / "unet_mixed_stain_best.pth"
 
 
-def _ensure_dir(path: Path) -> None:
-    path.mkdir(parents=True, exist_ok=True)
-
-
 # -------------------------------------------------------------------------
 # DataLoader helpers (val + test only, no augmentation)
 # -------------------------------------------------------------------------
@@ -374,7 +370,6 @@ def run_tb_test(
     )
 
     # Load model
-    # model = UNet(in_channels=1, out_channels=1).to(device)  --- for 3 depth shallow U-Net ---
     model = UNetDeep(
         in_channels=1,
         out_channels=1,
@@ -432,7 +427,6 @@ def run_ihc_test(
         num_workers=num_workers,
     )
 
-    # model = UNet(in_channels=1, out_channels=1).to(device)  --- for 3 depth shallow U-Net ---
     model = UNetDeep(
         in_channels=1,
         out_channels=1,

@@ -158,8 +158,6 @@ def run_tb_training():
         device=device,
     )
 
-    # model = UNet(in_channels=1, out_channels=1).to(device)  --- for 3 depth shallow U-Net ---
-
     model = UNetDeep(
         in_channels=1,
         out_channels=1,
@@ -174,7 +172,7 @@ def run_tb_training():
     )
 
     optimizer = optim.Adam(model.parameters(), lr=LR)
-    scheduler = None  # no scheduler in original tb.py
+    scheduler = None
 
     early_stopping = EarlyStopping(
         patience=PATIENCE,
@@ -210,8 +208,6 @@ def run_ihc_training():
         device=device,
     )
 
-    # model = UNet(in_channels=1, out_channels=1).to(device)  --- for 3 depth shallow U-Net ---
-
     model = UNetDeep(
         in_channels=1,
         out_channels=1,
@@ -221,7 +217,7 @@ def run_ihc_training():
 
     criterion = DiceBCELoss(
         alpha=IHC_LOSS_CONFIG.alpha,
-        pos_weight=None,  # no pos_weight for IHC
+        pos_weight=None,
     )
 
     optimizer = optim.Adam(model.parameters(), lr=LR)
