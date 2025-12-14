@@ -255,7 +255,7 @@ This is intended for quick sanity checks before running the full pipeline.
 Example usage:
 
 ```bash
-python3 -m src.scripts.previsualize_preprocessing
+python3 -m src.scripts.pre_visualization
 ```
 
 ---
