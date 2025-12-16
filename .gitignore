@@ -1,4 +1,5 @@
-data/origional
+data/origional/data2
+/data/origional/data2ihc
 # Include file /data/origional/empty.txt to keep the folder in git
 !data/origional/empty.txt
 data/splitted
