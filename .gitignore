@@ -1,4 +1,6 @@
 data/origional
+# Include file /data/origional/empty.txt to keep the folder in git
+!data/origional/empty.txt
 data/splitted
 axon-env/
 notebooks/
