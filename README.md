@@ -596,7 +596,13 @@ A typical end-to-end workflow is:
    python3 -m src.scripts.generate_overlays --exp mixed
    ```
 ---
+## Dataset availability and privacy
 
+The light microscopy images and ground-truth masks used in this project are **not publicly available** due to privacy/ethical restrictions.
+
+This repository therefore contains **code only**. If you want to run training/evaluation, you must provide your own dataset in the expected folder structure described in the README.
+
+## Reproducibility and extensibility
 This structure is intended to make it straightforward to:
 
 - rerun experiments from raw data,
