@@ -1,0 +1,52 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "axon-myelin-segmentation-pipeline"
+version = "0.1.0"
+description = "Deep learning pipeline for binary myelin segmentation in bright-field LM images (TB and IHC), including mixed-stain training."
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [{ name = "Gizachew Kassa" }]
+keywords = ["segmentation", "u-net", "pytorch", "light-microscopy", "medical-imaging", "myelin", "peripheral-nerve"]
+
+dependencies = [
+  "torch==2.9.0",
+  "torchvision==0.24.0",
+  "numpy==2.3.4",
+  "scipy==1.16.3",
+  "pandas==2.3.3",
+  "matplotlib==3.10.7",
+  "tqdm==4.67.1",
+  "scikit-image==0.25.2",
+  "opencv-python==4.11.0.86",
+  "Pillow==12.0.0",
+  "imageio==2.37.2",
+  "tifffile==2025.10.16",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8",
+  "ruff>=0.6",
+  "black>=24.0",
+]
+
+[project.scripts]
+axonseg-analyse-masks = "src.scripts.analyse_masks:main"
+axonseg-split-dataset = "src.scripts.split_dataset:main"
+axonseg-pre-visualization = "src.scripts.pre_visualization:main"
+axonseg-previsualize-preprocessing = "src.scripts.previsualize_preprocessing:main"
+axonseg-train = "src.scripts.train:main"
+axonseg-test = "src.scripts.test:main"
+axonseg-plot-history = "src.scripts.plot_history:main"
+axonseg-generate-overlays = "src.scripts.generate_overlays:main"
+axonseg-generate-triplets = "src.scripts.generate_triplets:main"
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["src*"]
